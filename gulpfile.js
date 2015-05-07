@@ -3,6 +3,8 @@ var concat = require("gulp-concat");
 var nodemon = require("gulp-nodemon");
 var uglify = require("gulp-uglify");
 var annotate = require("gulp-ng-annotate");
+var templateCache = require("gulp-angular-templatecache");
+var rimraf = require("rimraf");
 
 gulp.task("task1", function(done){
     setTimeout(function(){
@@ -20,16 +22,32 @@ gulp.task("default", ["task1", "task2"], function(){
     console.log("boo");
 });
 
+gulp.task("build:assets", ["js"], function(done){
+    rimraf("temp", done);
+});
+
 gulp.task("watch:js", ["js"], function(){
     gulp.watch("client/app/**/*.js", ["js"]);
 });
 
-gulp.task("js", function(){
-    gulp.src(["client/app/app.js", "client/app/**/*.js"])
+gulp.task("html", function(done){
+    var stream = gulp.src("client/templates/**/*.html")
+        .pipe(templateCache({module:"myWorld", root : "/templates"}))
+            .pipe(gulp.dest("temp"));
+    stream.on("end", function(){
+        done();
+    });
+});
+
+gulp.task("js", ["html"], function(done){
+    var stream = gulp.src(["client/app/app.js", "client/app/**/*.js", "temp/templates.js"])
         .pipe(concat("all.js"))
             .pipe(annotate())
                 .pipe(uglify())
                     .pipe(gulp.dest("prod"));
+    stream.on("end", function(){
+        done();
+    });
 });
 
 gulp.task("dev:server", function(){
