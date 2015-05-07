@@ -13,6 +13,7 @@ var app = express();
 app.locals.pretty = true;
 app.set("view engine", "jade");
 app.use(express.static(__dirname + "/client"));
+app.use(express.static(__dirname + "/prod"));
 app.use(bodyParser.json());
 
 var paths = ["/", "/people/:id?", "/things", "/login"];
